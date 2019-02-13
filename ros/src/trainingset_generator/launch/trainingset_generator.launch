@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="trainingset_generator" type="trainingset_generator.py" name="trainingset_generator" />
+</launch>
