@@ -1,6 +1,46 @@
 # Steering Controller Performance
 
-## Running Performance Test
+## Measuring the car's position MSE
+
+The `dbw_node_perf` node located in the `ros/src/twist_controller/dbw_node_perf.py` measures the mean squared error (MSE) of the car's position.
+
+The main launch file `launch/styx.launch` has been modified to launch the `dbw_node_perf` node. So no manual work required. Just launch ROS along with the simulator as usually.
+
+The node aggregates the MSE error and prints an info log message to stdout once measuring finished.
+Quite ofter the node stops before the message gets printed so see log files to find the message.
+
+## Tuning Log
+
+Using the `dbw_node_perf` to calculate MSE of the car's position.
+
+### 2019-02-16
+
+Track: Highway
+Number of samples: 240
+
+**The MSE error when don't adjust `target_angular_vel` in the yaw controller:**
+
+```
+Steering performance based on 240 samples = 0.0872404958333297
+Steering performance based on 240 samples = 0.0810669833333386
+```
+
+**The MSE error of the walkthrough code with updated waypoint follower:**
+
+```
+Steering performance based on 240 samples = 0.0828155124999976
+Steering performance based on 240 samples = 0.0769877833333294
+```
+
+**The MSE error of the walkthough code:**
+
+```
+Steering performance based on 240 samples = 0.1451740916666643
+```
+
+## Running Performance Test (obsolete)
+
+> this doesn't really help to measure the steering performance. Please use the `dbw_node_perf` node instead.
 
 Run the following command to prepare the test data:
 
@@ -49,15 +89,3 @@ The output will look like this:
 ```
 Steering performance based on 1000 samples = 0.0782663364056498
 ```
-
-## Perf Tune
-
-### 2019-02-14
-
-Streeting controller from the walkthrough lesson.
-The `following_flag` in the `waypoint_follower` is always set to `False` to force the follower to always update twist commands.
-
-Performance: 
-- `Steering performance based on 1000 samples = 0.0845631461869925`
-- `Steering performance based on 1000 samples = 0.0782663364056498`
-- `Steering performance based on 1000 samples = 0.1017662478219718`

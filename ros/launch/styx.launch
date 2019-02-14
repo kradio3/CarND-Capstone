@@ -6,8 +6,14 @@
     <!--DBW Node -->
     <include file="$(find twist_controller)/launch/dbw_sim.launch"/>
 
+    <!--DBW Node Performance -->
+    <include file="$(find twist_controller)/launch/dbw_perf.launch"/>
+
     <!--Waypoint Loader -->
     <include file="$(find waypoint_loader)/launch/waypoint_loader.launch"/>
+    
+    <!-- use instead the above line to test on site -->
+    <!-- <include file="$(find waypoint_loader)/launch/waypoint_loader_site.launch"/> -->
 
     <!--Waypoint Follower Node -->
     <include file="$(find waypoint_follower)/launch/pure_pursuit.launch"/>

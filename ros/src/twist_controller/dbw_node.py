@@ -41,9 +41,22 @@ class DBWNode(object):
         decel_limit = rospy.get_param('~decel_limit', -5)
         accel_limit = rospy.get_param('~accel_limit', 1.)
         wheel_radius = rospy.get_param('~wheel_radius', 0.2413)
+
+        # The wheelbase is the distance between the centers of the front and rear wheels.
+        # https://en.wikipedia.org/wiki/Wheelbase
         wheel_base = rospy.get_param('~wheel_base', 2.8498)
+        
+        # Steering ratio refers to the ratio between the turn of the steering wheel (in degrees) 
+        # or handlebars and the turn of the wheels (in degrees).
+        # https://en.wikipedia.org/wiki/Steering_ratio
+        #
+        # In this case, a turn of the steering wheel 14.8 degrees
+        # causes the wheels to turn 1 degree
         steer_ratio = rospy.get_param('~steer_ratio', 14.8)
+
+        # Maximum lateral acceleration
         max_lat_accel = rospy.get_param('~max_lat_accel', 3.)
+
         max_steer_angle = rospy.get_param('~max_steer_angle', 8.)
 
         self.steer_pub = rospy.Publisher('/vehicle/steering_cmd',
@@ -58,8 +71,8 @@ class DBWNode(object):
 
         self.dbw_enabled = False
         self.current_vel = None
-        self.linear_vel = None
-        self.angular_vel = None
+        self.target_linear_vel = None
+        self.target_angular_vel = None
 
         # Initialize subscribers
         rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.dbw_enabled_cb)
@@ -75,14 +88,14 @@ class DBWNode(object):
             rate.sleep()
 
     def loop_iter(self):
-        if None in (self.current_vel, self.linear_vel, self.angular_vel):
+        if None in (self.current_vel, self.target_linear_vel, self.target_angular_vel):
             # don't do anything if the fields are not initialized yet
             return
 
         throttle, brake, steering = self.controller.control(self.dbw_enabled, 
                                                             self.current_vel, 
-                                                            self.linear_vel, 
-                                                            self.angular_vel)
+                                                            self.target_linear_vel, 
+                                                            self.target_angular_vel)
         if self.dbw_enabled:
             self.publish(throttle, brake, steering)
 
@@ -90,8 +103,8 @@ class DBWNode(object):
         self.dbw_enabled = is_dbw_enabled
 
     def twist_cb(self, msg):
-        self.linear_vel =  msg.twist.linear.x
-        self.angular_vel = msg.twist.angular.z
+        self.target_linear_vel =  msg.twist.linear.x
+        self.target_angular_vel = msg.twist.angular.z
 
     def velocity_cb(self, msg):
         self.current_vel = msg.twist.linear.x
