@@ -98,7 +98,7 @@ def run_experiment(batch_size=32, lr=1e-6, epochs=3):
     model = create_model((row, col, ch))
 
     opt = Adam(lr=lr)
-    model.compile(loss='categorical_crossentropy', optimizer=opt)
+    model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
     model.fit_generator(
             train_generator, 
             steps_per_epoch=(len(train_samples)//batch_size),
@@ -106,9 +106,9 @@ def run_experiment(batch_size=32, lr=1e-6, epochs=3):
             validation_steps=len(validation_samples)//batch_size, 
             nb_epoch=epochs,
             )
-
+ 
 #    model.save('model_task-01_ds.v001_E-{}_LR-{}.h5'.format(epochs, lr))
-    print("Model saved")
+#    print("Model saved")
 
 if __name__ =='__main__':
     parser = argparse.ArgumentParser()
