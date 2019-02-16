@@ -4,7 +4,7 @@ import os
 import csv
 import cv2
 import numpy as np
-
+import math
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 
@@ -15,7 +15,7 @@ from keras.optimizers import Adam
 import argparse
 
 ROOT_DIR = './'
-DS_CSV = '{}/camera_img/ds.csv'.format(ROOT_DIR)
+DS_CSV = '{}/sim_camera_src/ds.csv'.format(ROOT_DIR)
 IDX_TO_SPARSE = {'0':0, '1':1, '2':2, '4':3}
 
 
@@ -68,7 +68,7 @@ def create_model(input_shape=(600, 800, 3)):
     #Convolutions
     model.add(Conv2D(6, (5,5), strides=(2,2), activation='relu'))
     #print(model.output_shape)
-    #model.add(Conv2D(36, (5,5), strides=(2,2), activation='relu'))
+    model.add(Conv2D(12, (5,5), strides=(2,2), activation='relu'))
     #model.add(Conv2D(48, (5,5), strides=(2,2), activation='relu'))
     #model.add(Conv2D(64, (3,3), activation='relu'))
     #model.add(Conv2D(64, (3,3), activation='relu'))
@@ -76,15 +76,34 @@ def create_model(input_shape=(600, 800, 3)):
     
     # Densors
     model.add(Flatten())
-    #model.add(Dense(128, activation='relu'))
-    #model.add(Dense(64, activation='relu'))
-    #model.add(Dense(16, activation='relu'))
+    model.add(Dense(128, activation='relu'))
+#     model.add(Dense(64, activation='relu'))
+#     model.add(Dense(16, activation='relu'))
     
     model.add(Dense(4, activation='softmax'))
     return model
 
+# model.add(Conv2D(32, (3, 3), input_shape=input_shape))
+# model.add(Activation('relu'))
+# model.add(MaxPooling2D(pool_size=(2, 2)))
 
-def run_experiment(batch_size=32, lr=1e-6, epochs=3):
+# model.add(Conv2D(32, (3, 3)))
+# model.add(Activation('relu'))
+# model.add(MaxPooling2D(pool_size=(2, 2)))
+
+# model.add(Conv2D(64, (3, 3)))
+# model.add(Activation('relu'))
+# model.add(MaxPooling2D(pool_size=(2, 2)))
+
+# model.add(Flatten())
+# model.add(Dense(64))
+# model.add(Activation('relu'))
+# model.add(Dropout(0.5))
+# model.add(Dense(1))
+# model.add(Activation('sigmoid'))
+
+
+def run_experiment(batch_size=32, lr=1e-5, epochs=3):
     train_samples, validation_samples = read_dataset()
     print("***************************")
     print("Epochs={}; \t lr={}; \t Batch={}; \tTrain={}; \tValid={}".format(epochs, lr, batch_size, len(train_samples), len(validation_samples)))
@@ -101,10 +120,10 @@ def run_experiment(batch_size=32, lr=1e-6, epochs=3):
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
     model.fit_generator(
             train_generator, 
-            steps_per_epoch=(len(train_samples)//batch_size),
+            steps_per_epoch=math.ceil(len(train_samples)/batch_size),
+            validation_steps=math.ceil(len(validation_samples)/batch_size),
             validation_data=validation_generator, 
-            validation_steps=len(validation_samples)//batch_size, 
-            nb_epoch=epochs,
+            epochs=epochs,
             )
  
 #    model.save('model_task-01_ds.v001_E-{}_LR-{}.h5'.format(epochs, lr))
