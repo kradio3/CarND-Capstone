@@ -12,8 +12,8 @@ class DBWNodePerf(object):
     def __init__(self):
         rospy.init_node('dbw_node_perf')
 
-        self.freq = 2 # Hz
-        self.num_samples = 240 # which will be gathered after two-minute driving
+        self.freq = 40 # Hz
+        self.num_samples = 120 * self.freq # which will be gathered after two-minute driving
         self.mse_acc = 0
         self.mse_cnt = 0
 

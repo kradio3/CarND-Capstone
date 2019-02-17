@@ -21,21 +21,22 @@ Number of samples: 240
 **The MSE error when don't adjust `target_angular_vel` in the yaw controller:**
 
 ```
-Steering performance based on 240 samples = 0.0872404958333297
-Steering performance based on 240 samples = 0.0810669833333386
+Steering performance based on 4800 samples = 0.0819861014583316
+Steering performance based on 4800 samples = 0.0821451122916661
 ```
 
 **The MSE error of the walkthrough code with updated waypoint follower:**
 
 ```
-Steering performance based on 240 samples = 0.0828155124999976
-Steering performance based on 240 samples = 0.0769877833333294
+Steering performance based on 4800 samples = 0.0863728854166650
+Steering performance based on 4800 samples = 0.0862604252083322
 ```
 
 **The MSE error of the walkthough code:**
 
 ```
-Steering performance based on 240 samples = 0.1451740916666643
+Steering performance based on 4800 samples = 0.1356663893749996
+Steering performance based on 4800 samples = 0.1763829977083291
 ```
 
 ## Running Performance Test (obsolete)
