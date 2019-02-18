@@ -53,19 +53,24 @@ class DBWTestNode(object):
 
         # limits the max number of gathered samples
         # use None to not use the limit
-        self.max_samples_steering = 1000
+        self.max_samples_steering = 1500
         self.max_samples_throttle = None
         self.max_samples_brake = None
 
         self.loop()
 
     def shutdown(self, reason):
+        rospy.logwarn("Shutdown the node with the reason: %s" % reason)
         rospy.signal_shutdown(reason)
 
     def loop(self):
         rate = rospy.Rate(10) # 10Hz
         while not rospy.is_shutdown():
-            rate.sleep()
+            try:
+                rate.sleep()
+            except (rospy.ROSInterruptException, KeyboardInterrupt):
+                rospy.logwarn("Interrupted")
+                pass
         fieldnames = ['actual', 'proposed']
 
         with open(self.steerfile, 'w') as csvfile:

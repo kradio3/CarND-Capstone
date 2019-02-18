@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import csv
-import math
 
 def main():
     steer_file = "ros/src/twist_controller/steers.csv"
@@ -13,7 +12,8 @@ def main():
             cnt += 1
             actual = float(row['actual'])
             proposed = float(row['proposed'])
-            mse += abs(actual - proposed)
+            diff = actual - proposed
+            mse += diff*diff
     mse = mse / cnt
     print('Steering performance based on %d samples = %.16f' % (cnt, mse))
 

@@ -33,22 +33,22 @@ class Controller(object):
 
         self.last_time = rospy.get_time()
 
-    def control(self, dbw_enabled, current_vel, linear_vel, angular_vel):
+    def control(self, dbw_enabled, current_vel, target_linear_vel, target_angular_vel):
         if not dbw_enabled:
             self.throttle_controller.reset()
             return 0, 0, 0
 
         current_vel = self.vel_lpf.filt(current_vel)
 
-        steering = self.yaw_controller.get_steering(linear_vel, angular_vel, current_vel)
+        steering = self.yaw_controller.get_steering(target_linear_vel, target_angular_vel, current_vel)
 
-        # rospy.logwarn("Target linear vel: %f" % linear_vel)
-        # rospy.logwarn("Target angular vel: %f" % angular_vel)
+        # rospy.logwarn("Target linear vel: %f" % target_linear_vel)
+        # rospy.logwarn("Target angular vel: %f" % target_angular_vel)
         # rospy.logwarn("Current vel: %f" % current_vel)
         # rospy.logwarn("Filtered current vel: %f" % self.vel_lpf.get())
         # rospy.logwarn("Steering: %f" % steering)
 
-        vel_error = linear_vel - current_vel
+        vel_error = target_linear_vel - current_vel
         self.last_vel = current_vel
 
         current_time = rospy.get_time()
@@ -58,7 +58,7 @@ class Controller(object):
         throttle = self.throttle_controller.step(vel_error, sample_time)
         brake = 0
 
-        if linear_vel == 0. and current_vel < 0.1:
+        if target_linear_vel == 0. and current_vel < 0.1:
             throttle = 0
             brake = 700
         elif throttle < .1 and vel_error < 0:
