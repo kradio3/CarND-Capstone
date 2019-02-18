@@ -69,7 +69,7 @@ class WaypointUpdater(object):
         # If there is not a red light close to the car
         # Get the waypoints like normal
         # Else get the waypoints that stop at the red light
-        if self.stopline_wp_ind == -1 or (self.stopline_wp_ind >= farthest_idx):
+        if self.stopline_wp_ind < closest_idx or self.stopline_wp_ind > farthest_idx:
             lane.waypoints = base_waypoints_1
         else:
             lane.waypoints = self.decelerate_waypoints(base_waypoints_1, closest_idx)
