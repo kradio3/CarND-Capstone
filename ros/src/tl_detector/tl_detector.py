@@ -14,7 +14,7 @@ import yaml
 import math
 
 STATE_COUNT_THRESHOLD = 3
-
+TL_LOOK_AHEAD = 50
 
 class TLDetector(object):
     def __init__(self):
@@ -53,15 +53,11 @@ class TLDetector(object):
     def pose_cb(self, msg):
         self.pose = msg
 
-        # TODO move to image_cb
-        # Get the light waypoint and state
-        light_wp, state = self.process_traffic_lights()
-        # If yellow or red publish waypoint
-        # Else publish -1
-        if state == 0 or state == 1:
-            self.upcoming_red_light_pub.publish(Int32(light_wp))
-        else:
-            self.upcoming_red_light_pub.publish(Int32(-1))
+        # TODO: delete when start using camera images
+        self.update_traffic_lights()
+
+    def is_stop_tl_state(self, tl_state):
+        return tl_state == TrafficLight.RED or tl_state == TrafficLight.YELLOW
 
     def waypoints_cb(self, waypoints):
         self.waypoints = waypoints
@@ -82,19 +78,22 @@ class TLDetector(object):
         """
         self.has_image = True
         self.camera_image = msg
-        light_wp, state = self.process_traffic_lights()
+        # Publish upcoming red lights at camera frequency.
+        self.update_traffic_lights()
+
+    def update_traffic_lights(self):
         '''
-        Publish upcoming red lights at camera frequency.
         Each predicted state has to occur `STATE_COUNT_THRESHOLD` number
         of times till we start using it. Otherwise the previous stable state is
         used.
         '''
+        light_wp, state = self.process_traffic_lights()
         if self.state != state:
             self.state_count = 0
             self.state = state
         elif self.state_count >= STATE_COUNT_THRESHOLD:
             self.last_state = self.state
-            light_wp = light_wp if state == TrafficLight.RED else -1
+            light_wp = light_wp if self.is_stop_tl_state(state) else -1
             self.last_wp = light_wp
             self.upcoming_red_light_pub.publish(Int32(light_wp))
         else:
@@ -152,7 +151,6 @@ class TLDetector(object):
 
         """
         closest_light = None
-        closest_light_wp = None
         closest_light_stop_wp = None
         dist_to_light = 10000  # initialize to high value
         first = True
@@ -178,13 +176,12 @@ class TLDetector(object):
                     closest_light_stop_wp = light_stop_wp
                     closest_light = light
 
-        if ((car_position is not None) and (closest_light_stop_wp is not None)):
+        if closest_light_stop_wp is not None:
             dist_to_light = abs(car_position - closest_light_stop_wp)
-
-        # we check the status of the traffic light if it's within 50 waypoints
-        if closest_light and dist_to_light < 50:
-            state = self.get_light_state(closest_light)
-            return closest_light_stop_wp, state
+            # we check the status of the traffic light if it's within TL_LOOK_AHEAD waypoints
+            if dist_to_light < TL_LOOK_AHEAD:
+                state = self.get_light_state(closest_light)
+                return closest_light_stop_wp, state
 
         return -1, TrafficLight.UNKNOWN
 
