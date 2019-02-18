@@ -141,7 +141,7 @@ def run_experiment(batch_size=32, lr=1e-5, epochs=3):
             epochs=epochs,
             )
  
-#    model.save('model_task-01_ds.v001_E-{}_LR-{}.h5'.format(epochs, lr))
+    model.save('model_sim_E-{}_LR-{}.h5'.format(epochs, lr))
 #    print("Model saved")
 
 if __name__ =='__main__':
