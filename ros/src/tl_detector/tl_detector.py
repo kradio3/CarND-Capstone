@@ -17,8 +17,7 @@ STATE_COUNT_THRESHOLD = 3
 
 class TLDetector(object):
     def __init__(self):
-	# TODO: Remove the logger once the node is stable
-        rospy.init_node('tl_detector', log_level=rospy.DEBUG)
+        rospy.init_node('tl_detector')
 
         self.pose = None
         self.waypoints = None
@@ -63,7 +62,7 @@ class TLDetector(object):
 	
 	light_wp, state = self.process_traffic_lights()
 
-	if state == 0:
+	if state == 0 or state == 1:
 		self.upcoming_red_light_pub.publish(Int32(light_wp))
 	else:
 		self.upcoming_red_light_pub.publish(Int32(-1))
