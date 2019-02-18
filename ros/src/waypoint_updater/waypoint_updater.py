@@ -34,7 +34,7 @@ class WaypointUpdater(object):
         rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
 	rospy.Subscriber('/traffic_waypoint',Int32, self.traffic_cb)
 	
-        # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
+        # TODO: Add a subscriber for /obstacle_waypoint below
 
 
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
@@ -60,26 +60,21 @@ class WaypointUpdater(object):
     def publish_waypoints(self):
 	final_lane = self.generate_lane()
 	self.final_waypoints_pub.publish(final_lane)
-	'''
-        lane = Lane()
-        lane.header = self.base_waypoints.header
-        lane.waypoints = self.base_waypoints.waypoints[idx : idx + LOOKAHEAD_WPS]
-        self.final_waypoints_pub.publish(lane)
-	'''
+
 
     def generate_lane(self):
-	#print("Making lane")
 	lane = Lane()
-
+	
 	closest_idx = self.get_nearest_waypoint_idx()
 	farthest_idx = closest_idx + LOOKAHEAD_WPS
 	base_waypoints_1 = self.base_waypoints.waypoints[closest_idx:farthest_idx]
 	
+	# If there is not a red light close to the car
+	# Get the waypoints like normal
+	# Else get the waypoints that stop at the red light
 	if self.stopline_wp_ind == -1 or (self.stopline_wp_ind >= farthest_idx):
-	    print("Light too far\nlight idx={}, far idx={}".format(self.stopline_wp_ind, farthest_idx))
 	    lane.waypoints = base_waypoints_1
 	else:
-	    print("Light is close")
 	    lane.waypoints = self.decelerate_waypoints(base_waypoints_1, closest_idx)
 
 	return lane
@@ -97,9 +92,7 @@ class WaypointUpdater(object):
 		vel = 0
 	    p.twist.twist.linear.x = min(vel, wp.twist.twist.linear.x)
 	    temp.append(p)
-	return temp
-
-    
+	return temp    
 
     def get_nearest_waypoint_idx(self):
         x = self.pose.pose.position.x
@@ -131,10 +124,7 @@ class WaypointUpdater(object):
             self.waypoint_tree = KDTree(self.waypoints_2d)
 
     def traffic_cb(self, msg):
-        # TODO: Callback for /traffic_waypoint message. Implement
-	self.stopline_wp_ind = msg.data    
-	print("recieved waypoit = {}".format(self.stopline_wp_ind))
-	  
+	self.stopline_wp_ind = msg.data 
 
     def obstacle_cb(self, msg):
         # TODO: Callback for /obstacle_waypoint message. We will implement it later
