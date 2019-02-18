@@ -12,6 +12,7 @@ import tf
 import cv2
 import yaml
 import math
+import numpy as np
 
 STATE_COUNT_THRESHOLD = 3
 TL_LOOK_AHEAD = 50
@@ -27,6 +28,9 @@ class TLDetector(object):
         self.lights = []
         self.has_image = False
         self.waypoint_tree = None
+        self.bridge = CvBridge()
+        self.light_classifier = TLClassifier()
+        self.state = TrafficLight.UNKNOWN
 
         sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
@@ -39,11 +43,8 @@ class TLDetector(object):
 
         self.upcoming_red_light_pub = rospy.Publisher('/traffic_waypoint', Int32, queue_size=1)
 
-        self.bridge = CvBridge()
-        self.light_classifier = TLClassifier()
         self.listener = tf.TransformListener()
 
-        self.state = TrafficLight.UNKNOWN
         self.last_state = TrafficLight.UNKNOWN
         self.last_wp = -1
         self.state_count = 0
@@ -54,6 +55,9 @@ class TLDetector(object):
         self.pose = msg
 
         # TODO: delete when start using camera images
+        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
+        light = self.light_classifier.get_classification(cv_image)
+        rospy.loginfo('light')
         self.update_traffic_lights()
 
     def is_stop_tl_state(self, tl_state):
