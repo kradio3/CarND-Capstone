@@ -75,7 +75,7 @@ class WaypointUpdater(object):
         temp = []
         for i, wp in enumerate(waypoints):
             dist = self.distance(self.base_waypoints.waypoints, closest_idx + i, self.stopline_wp_ind)
-            vel = math.sqrt(4 * dist)
+            vel = math.sqrt(3 * dist)
             if vel < 1:
                 vel = 0
 
