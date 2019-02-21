@@ -103,9 +103,9 @@ class TLDetector(object):
     def get_light_state(self):
         if(not self.camera_image):
             self.prev_light_loc = None
-            return False
+            return TrafficLight.UNKNOWN
 
-        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
+        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "rgb8")
         light = self.light_classifier.get_classification(cv_image)
         return light.state
 
@@ -145,14 +145,13 @@ class TLDetector(object):
         closest_light = None
         if self.pose:
             car_pos = self.get_closest_waypoint(self.pose.pose)
-
-        stop_wp = self.get_stop_waypoint(car_pos)
-        if self.is_tl_visible(stop_wp, car_pos):
-            thread = Thread(
-                    target = self.predict_and_publish, 
-                    args=[stop_wp],
-                    )
-            thread.start()
+            stop_wp = self.get_stop_waypoint(car_pos)
+            if self.is_tl_visible(stop_wp, car_pos):
+                thread = Thread(
+                        target = self.predict_and_publish, 
+                        args=[stop_wp],
+                        )
+                thread.start()
 
 
     def predict_and_publish(self, wp):
