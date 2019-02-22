@@ -1,9 +1,7 @@
 from styx_msgs.msg import TrafficLight
-import keras
 from keras.models import Model
 from keras.layers import Dense, GlobalAveragePooling2D
-from keras.applications.resnet50 import preprocess_input
-from keras.applications.resnet50 import ResNet50, decode_predictions
+from keras.applications.resnet50 import ResNet50, preprocess_input
 import os
 import tensorflow as tf
 import numpy as np
@@ -30,15 +28,6 @@ class TLClassifier(object):
         return model
 
     def get_classification(self, image):
-        """Determines the color of the traffic light in the image
-
-        Args:
-        image (cv::Mat): image containing the traffic light
-
-        Returns:
-        int: ID of traffic light color (specified in styx_msgs/TrafficLight)
-
-        """
         x = cv2.resize(image, (224, 224)) 
         x = np.expand_dims(x, axis=0)
         x = np.float64(x)
