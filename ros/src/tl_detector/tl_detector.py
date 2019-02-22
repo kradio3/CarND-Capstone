@@ -41,11 +41,16 @@ class TLDetector(object):
         self.last_state = TrafficLight.UNKNOWN
         self.last_wp = -1
         self.state_count = 0
-        rospy.spin()
+        self.loop()
+
+    def loop(self):
+        rate = rospy.Rate(4)
+        while not rospy.is_shutdown():
+            self.process_traffic_lights()
+            rate.sleep()
 
     def pose_cb(self, msg):
         self.pose = msg
-        self.process_traffic_lights()
 
     def waypoints_cb(self, waypoints):
         if not self.waypoint_tree:
@@ -94,9 +99,7 @@ class TLDetector(object):
         """
         px = pose.position.x
         py = pose.position.y
-        closest_idx = -1
-        if self.waypoint_tree is not None:
-            closest_idx = self.waypoint_tree.query([px, py], 1)[1]
+        closest_idx = self.waypoint_tree.query([px, py], 1)[1]
 
         return closest_idx
 
@@ -141,9 +144,7 @@ class TLDetector(object):
             if one exists, and determines its
             location and color
         """
-        car_pos = None
-        closest_light = None
-        if self.pose:
+        if self.pose and self.waypoint_tree:
             car_pos = self.get_closest_waypoint(self.pose.pose)
             stop_wp = self.get_stop_waypoint(car_pos)
             if self.is_tl_visible(stop_wp, car_pos):
