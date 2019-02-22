@@ -103,12 +103,12 @@ class TLDetector(object):
 
         return closest_idx
 
-    def get_light_state(self):
-        if(not self.camera_image):
+    def get_light_state(self, image):
+        if not image:
             self.prev_light_loc = None
             return TrafficLight.UNKNOWN
 
-        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "rgb8")
+        cv_image = self.bridge.imgmsg_to_cv2(image, "rgb8")
         light = self.light_classifier.get_classification(cv_image)
         return light.state
 
@@ -159,7 +159,9 @@ class TLDetector(object):
         if self.lock:
             return
         self.lock=True
-        state = self.get_light_state()
+        image = self.camera_image
+        self.camera_image = None
+        state = self.get_light_state(image)
         self.publish_lights(wp, state)
         self.lock=False
 
