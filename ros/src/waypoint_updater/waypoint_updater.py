@@ -24,8 +24,8 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
 LOOKAHEAD_WPS = 50  # Number of waypoints we will publish. You can change this number
-MAX_DECEL = 0.5
-
+STOPLINE_WP_OFFSET = 3  # Defines the number of waypoints between a traffic light and its stopline.
+MAX_DECEL = 1.5
 
 class WaypointUpdater(object):
     def __init__(self):
@@ -60,33 +60,27 @@ class WaypointUpdater(object):
         self.final_waypoints_pub.publish(final_lane)
 
     def generate_lane(self):
-        lane = Lane()
-
         closest_idx = self.get_nearest_waypoint_idx()
         farthest_idx = closest_idx + LOOKAHEAD_WPS
-        base_waypoints_1 = self.base_waypoints.waypoints[closest_idx:farthest_idx]
+        waypoints = self.base_waypoints.waypoints[closest_idx:farthest_idx]
 
-        # If there is not a red light close to the car
-        # Get the waypoints like normal
-        # Else get the waypoints that stop at the red light
-        if self.stopline_wp_ind < closest_idx or self.stopline_wp_ind > farthest_idx:
-            lane.waypoints = base_waypoints_1
-        else:
-            lane.waypoints = self.decelerate_waypoints(base_waypoints_1, closest_idx)
+        if closest_idx <= self.stopline_wp_ind:
+            waypoints = self.decelerate_waypoints(waypoints, closest_idx)
 
+        lane = Lane()
+        lane.waypoints = waypoints
         return lane
 
     def decelerate_waypoints(self, waypoints, closest_idx):
         temp = []
         for i, wp in enumerate(waypoints):
-            p = Waypoint()
-            p.pose = wp.pose
-
-            stop_idx = max(self.stopline_wp_ind - closest_idx - 2, 0)
-            dist = self.distance(waypoints, i, stop_idx)
+            dist = self.distance(self.base_waypoints.waypoints, closest_idx + i, self.stopline_wp_ind)
             vel = math.sqrt(2 * MAX_DECEL * dist)
             if vel < 1:
                 vel = 0
+
+            p = Waypoint()
+            p.pose = wp.pose
             p.twist.twist.linear.x = min(vel, wp.twist.twist.linear.x)
             temp.append(p)
         return temp
@@ -121,7 +115,13 @@ class WaypointUpdater(object):
             self.waypoint_tree = KDTree(self.waypoints_2d)
 
     def traffic_cb(self, msg):
-        self.stopline_wp_ind = msg.data
+        """
+        The /traffic_waypoint topic contains indexes of traffic lights at which the car must stop.
+        However, quite often the traffic light's stopline is before the traffic light itself.
+        Here, we take into account the distance between a traffic light and its stopline.
+        """
+        traffic_light_wp_ind = msg.data
+        self.stopline_wp_ind = traffic_light_wp_ind - STOPLINE_WP_OFFSET
 
     def obstacle_cb(self, msg):
         # TODO: Callback for /obstacle_waypoint message. We will implement it later

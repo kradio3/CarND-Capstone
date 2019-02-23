@@ -16,7 +16,7 @@ import numpy as np
 from threading import Thread
 
 STATE_COUNT_THRESHOLD = 2
-TL_LOOK_AHEAD =100 
+TL_LOOK_AHEAD = 100
 
 class TLDetector(object):
     def __init__(self):
@@ -50,7 +50,7 @@ class TLDetector(object):
     def waypoints_cb(self, waypoints):
         if not self.waypoint_tree:
             waypoints_2d = [
-                    [w.pose.pose.position.x, w.pose.pose.position.y] 
+                    [w.pose.pose.position.x, w.pose.pose.position.y]
                     for w in waypoints.waypoints
                     ]
             self.waypoint_tree = KDTree(waypoints_2d)
@@ -121,7 +121,7 @@ class TLDetector(object):
             stop_wp = self.get_closest_waypoint(stop_pose)
 
             # if waypoint is  close to the traffic light and ahead of the car
-            if stop_wp >= car_pos:  
+            if stop_wp >= car_pos:
                 # check for the first light
                 if first:
                     closest_stop_wp = stop_wp
@@ -131,13 +131,13 @@ class TLDetector(object):
         return closest_stop_wp
 
     def is_tl_visible(self, stop_wp, car_pos):
-        dist_to_light = 10000  
+        dist_to_light = 10000
         if stop_wp and car_pos:
             dist_to_light = abs(car_pos - stop_wp)
         return dist_to_light < TL_LOOK_AHEAD
 
     def process_traffic_lights(self):
-        """Finds closest visible traffic light, 
+        """Finds closest visible traffic light,
             if one exists, and determines its
             location and color
         """
@@ -148,7 +148,7 @@ class TLDetector(object):
             stop_wp = self.get_stop_waypoint(car_pos)
             if self.is_tl_visible(stop_wp, car_pos):
                 thread = Thread(
-                        target = self.predict_and_publish, 
+                        target = self.predict_and_publish,
                         args=[stop_wp],
                         )
                 thread.start()

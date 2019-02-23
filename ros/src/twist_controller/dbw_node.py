@@ -45,8 +45,8 @@ class DBWNode(object):
         # The wheelbase is the distance between the centers of the front and rear wheels.
         # https://en.wikipedia.org/wiki/Wheelbase
         wheel_base = rospy.get_param('~wheel_base', 2.8498)
-        
-        # Steering ratio refers to the ratio between the turn of the steering wheel (in degrees) 
+
+        # Steering ratio refers to the ratio between the turn of the steering wheel (in degrees)
         # or handlebars and the turn of the wheels (in degrees).
         # https://en.wikipedia.org/wiki/Steering_ratio
         #
@@ -92,9 +92,9 @@ class DBWNode(object):
             # don't do anything if the fields are not initialized yet
             return
 
-        throttle, brake, steering = self.controller.control(self.dbw_enabled, 
-                                                            self.current_vel, 
-                                                            self.target_linear_vel, 
+        throttle, brake, steering = self.controller.control(self.dbw_enabled,
+                                                            self.current_vel,
+                                                            self.target_linear_vel,
                                                             self.target_angular_vel)
         if self.dbw_enabled:
             self.publish(throttle, brake, steering)
@@ -105,6 +105,8 @@ class DBWNode(object):
     def twist_cb(self, msg):
         self.target_linear_vel =  msg.twist.linear.x
         self.target_angular_vel = msg.twist.angular.z
+        if self.target_linear_vel < 0:
+            rospy.logerror("dbw_node: target lineary velocity is negative: %f" % self.target_linear_vel)
 
     def velocity_cb(self, msg):
         self.current_vel = msg.twist.linear.x
