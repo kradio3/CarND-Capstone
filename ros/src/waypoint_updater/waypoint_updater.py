@@ -25,27 +25,24 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 
 LOOKAHEAD_WPS = 50  # Number of waypoints we will publish. You can change this number
 STOPLINE_WP_OFFSET = 3  # Defines the number of waypoints between a traffic light and its stopline.
+STOPLINE_WP_BUFFER = 20
 MAX_DECEL = 1.5
 
 class WaypointUpdater(object):
     def __init__(self):
         rospy.init_node('waypoint_updater')
 
-        rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
-        rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
-        rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
-
-        # TODO: Add a subscriber for /obstacle_waypoint below
-
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
 
-        # TODO: Add other member variables you need below
         self.pose = None
         self.base_waypoints = None
         self.waypoints_2d = None
         self.waypoint_tree = None
-        self.stopline_wp_ind = -1
+        self.stopline_wp_ind = None
 
+        rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
+        rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
+        rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
         self.loop()
 
     def loop(self):
@@ -64,7 +61,7 @@ class WaypointUpdater(object):
         farthest_idx = closest_idx + LOOKAHEAD_WPS
         waypoints = self.base_waypoints.waypoints[closest_idx:farthest_idx]
 
-        if closest_idx <= self.stopline_wp_ind:
+        if self.stopline_wp_ind and closest_idx <= self.stopline_wp_ind + STOPLINE_WP_BUFFER:
             waypoints = self.decelerate_waypoints(waypoints, closest_idx)
 
         lane = Lane()
@@ -74,10 +71,13 @@ class WaypointUpdater(object):
     def decelerate_waypoints(self, waypoints, closest_idx):
         temp = []
         for i, wp in enumerate(waypoints):
-            dist = self.distance(self.base_waypoints.waypoints, closest_idx + i, self.stopline_wp_ind)
-            vel = math.sqrt(2 * MAX_DECEL * dist)
-            if vel < 1:
-                vel = 0
+            vel = 0
+            wp_idx = closest_idx + i
+            if wp_idx < self.stopline_wp_ind:
+                dist = self.distance(self.base_waypoints.waypoints, wp_idx, self.stopline_wp_ind)
+                vel = math.sqrt(2 * MAX_DECEL * dist)
+                if vel < 1:
+                    vel = 0
 
             p = Waypoint()
             p.pose = wp.pose
@@ -121,11 +121,11 @@ class WaypointUpdater(object):
         Here, we take into account the distance between a traffic light and its stopline.
         """
         traffic_light_wp_ind = msg.data
-        self.stopline_wp_ind = traffic_light_wp_ind - STOPLINE_WP_OFFSET
-
-    def obstacle_cb(self, msg):
-        # TODO: Callback for /obstacle_waypoint message. We will implement it later
-        pass
+        if traffic_light_wp_ind < 0:
+            self.stopline_wp_ind = None
+        else:
+            self.stopline_wp_ind = max(0, traffic_light_wp_ind - STOPLINE_WP_OFFSET)
+        rospy.loginfo("traffic_cb: stopline_wp_ind={0}".format(self.stopline_wp_ind))
 
     def get_waypoint_velocity(self, waypoint):
         return waypoint.twist.twist.linear.x
