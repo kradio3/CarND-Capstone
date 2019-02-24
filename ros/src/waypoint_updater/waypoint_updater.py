@@ -25,7 +25,7 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 
 LOOKAHEAD_WPS = 50  # Number of waypoints we will publish. You can change this number
 STOPLINE_WP_OFFSET = 3  # Defines the number of waypoints between a traffic light and its stopline.
-STOPLINE_WP_BUFFER = 20
+STOPLINE_WP_BUFFER = 15
 MAX_DECEL = 1.5
 
 class WaypointUpdater(object):
@@ -125,7 +125,7 @@ class WaypointUpdater(object):
             self.stopline_wp_ind = None
         else:
             self.stopline_wp_ind = max(0, traffic_light_wp_ind - STOPLINE_WP_OFFSET)
-        rospy.loginfo("traffic_cb: stopline_wp_ind={0}".format(self.stopline_wp_ind))
+        # rospy.loginfo("traffic_cb: stopline_wp_ind={0}".format(self.stopline_wp_ind))
 
     def get_waypoint_velocity(self, waypoint):
         return waypoint.twist.twist.linear.x
