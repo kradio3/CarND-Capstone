@@ -17,6 +17,7 @@ from threading import Thread
 
 STATE_COUNT_THRESHOLD = 2
 TL_LOOK_AHEAD = 100
+TL_LOOK_BEHIND = 15
 
 class TLDetector(object):
     def __init__(self):
@@ -31,9 +32,6 @@ class TLDetector(object):
         self.state = TrafficLight.UNKNOWN
         self.lock = False
 
-        sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
-        sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
-        sub6 = rospy.Subscriber('/image_color', Image, self.image_cb)
         config_string = rospy.get_param("/traffic_light_config")
         self.config = yaml.load(config_string)
 
@@ -41,6 +39,10 @@ class TLDetector(object):
         self.last_state = TrafficLight.UNKNOWN
         self.last_wp = -1
         self.state_count = 0
+
+        rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
+        rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
+        rospy.Subscriber('/image_color', Image, self.image_cb)
         rospy.spin()
 
     def pose_cb(self, msg):
@@ -111,8 +113,6 @@ class TLDetector(object):
 
     def get_stop_waypoint(self, car_pos):
         stop_line_positions = self.config['stop_line_positions']
-        closest_stop_wp = None
-        first = True
         for sl_x, sl_y in stop_line_positions:
             stop_pose = Pose()
             stop_pose.position.x = sl_x
@@ -120,15 +120,14 @@ class TLDetector(object):
             # get the wp closest to each light_position
             stop_wp = self.get_closest_waypoint(stop_pose)
 
-            # if waypoint is  close to the traffic light and ahead of the car
-            if stop_wp >= car_pos:
-                # check for the first light
-                if first:
-                    closest_stop_wp = stop_wp
-                    first = False
-                elif stop_wp < closest_stop_wp:
-                    closest_stop_wp = stop_wp
-        return closest_stop_wp
+            # return the stopine's wp index
+            # if the stopline is ahead the car within the TL_LOOK_AHEAD wps range,
+            # or it is behind the car withing the TL_LOOK_BEHIND wps range.
+            # the stopline can be behind if the car could not stop and crossed the stopline.
+            # in this case the cars must also stop.
+            if car_pos - TL_LOOK_BEHIND <= stop_wp and stop_wp <= car_pos + TL_LOOK_AHEAD:
+                return stop_wp
+        return None
 
     def is_tl_visible(self, stop_wp, car_pos):
         dist_to_light = 10000
@@ -142,7 +141,6 @@ class TLDetector(object):
             location and color
         """
         car_pos = None
-        closest_light = None
         if self.pose:
             car_pos = self.get_closest_waypoint(self.pose.pose)
             stop_wp = self.get_stop_waypoint(car_pos)
