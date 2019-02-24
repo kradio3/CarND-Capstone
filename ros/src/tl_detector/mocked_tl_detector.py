@@ -12,7 +12,8 @@ import math
 import numpy as np
 
 STATE_COUNT_THRESHOLD = 3
-TL_LOOK_AHEAD = 50
+TL_LOOK_AHEAD = 100
+TL_LOOK_BEHIND = 15
 
 class TLDetector(object):
     def __init__(self):
@@ -101,20 +102,8 @@ class TLDetector(object):
 
         Returns:
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
-
         """
-
         return light.state
-        '''
-        if(not self.has_image):
-            self.prev_light_loc = None
-            return False
-
-        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
-
-        #Get classification
-        return self.light_classifier.get_classification(cv_image)
-	'''
 
     def process_traffic_lights(self):
         """Finds closest visible traffic light, if one exists, and determines its
@@ -125,15 +114,11 @@ class TLDetector(object):
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
 
         """
-        closest_light = None
-        closest_light_stop_wp = None
-        dist_to_light = 10000  # initialize to high value
-        first = True
-        stop_line_positions = self.config['stop_line_positions']
-        if(self.pose):
-            car_position = self.get_closest_waypoint(self.pose.pose)
-        else:
+        if not self.pose:
             return -1, TrafficLight.UNKNOWN
+
+        stop_line_positions = self.config['stop_line_positions']
+        car_position = self.get_closest_waypoint(self.pose.pose)
 
         for i, light in enumerate(self.lights):
             light_stop_pose = Pose()
@@ -142,21 +127,9 @@ class TLDetector(object):
             # get the wp closest to each light_position
             light_stop_wp = self.get_closest_waypoint(light_stop_pose)
 
-            if light_stop_wp >= car_position:  # if waypoint is  close to the traffic light and ahead of the car
-                if first:  # check for the first light
-                    closest_light_stop_wp = light_stop_wp
-                    closest_light = light
-                    first = False
-                elif light_stop_wp < closest_light_stop_wp:
-                    closest_light_stop_wp = light_stop_wp
-                    closest_light = light
-
-        if closest_light_stop_wp is not None:
-            dist_to_light = abs(car_position - closest_light_stop_wp)
-            # we check the status of the traffic light if it's within TL_LOOK_AHEAD waypoints
-            if dist_to_light < TL_LOOK_AHEAD:
-                state = self.get_light_state(closest_light)
-                return closest_light_stop_wp, state
+            if car_position - TL_LOOK_BEHIND <= light_stop_wp and light_stop_wp <= car_position + TL_LOOK_AHEAD:
+                state = self.get_light_state(light)
+                return light_stop_wp, state
 
         return -1, TrafficLight.UNKNOWN
 
