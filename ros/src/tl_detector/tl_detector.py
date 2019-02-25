@@ -28,12 +28,13 @@ class TLDetector(object):
         self.camera_image = None
         self.lights = []
         self.bridge = CvBridge()
-        self.light_classifier = TLClassifier()
         self.state = TrafficLight.UNKNOWN
         self.lock = False
 
         config_string = rospy.get_param("/traffic_light_config")
         self.config = yaml.load(config_string)
+        is_site = self.config['is_site']
+        self.light_classifier = TLClassifier(is_site)
 
         self.upcoming_red_light_pub = rospy.Publisher('/traffic_waypoint', Int32, queue_size=1)
         self.last_state = TrafficLight.UNKNOWN
