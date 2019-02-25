@@ -46,6 +46,13 @@ make attach
 make test-init
 ```
 
+### Team Members
+* [Elias Khsheibun](https://github.com/elias3)
+* [Roman Niukhalov](https://github.com/nyukhalov)
+* [Andrey Yaroshenko](https://github.com/kradio3)
+* [Nathan Sherrit](https://github.com/nathansherrit)
+* [Ragupathy Gopalakrishnan](https://github.com/ragu-git)
+
 ### Docs
 
 - [Project instructions by Udacity](UDACITY.md)
