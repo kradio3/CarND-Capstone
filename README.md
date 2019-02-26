@@ -46,12 +46,13 @@ make attach
 make test-init
 ```
 
+### Team Lead
+* [Elias Khsheibun](https://github.com/elias3) - elias3@gmail.com
 ### Team Members
-* [Elias Khsheibun](https://github.com/elias3)
-* [Roman Niukhalov](https://github.com/nyukhalov)
-* [Andrey Yaroshenko](https://github.com/kradio3)
-* [Nathan Sherrit](https://github.com/nathansherrit)
-* [Ragupathy Gopalakrishnan](https://github.com/ragu-git)
+* [Roman Niukhalov](https://github.com/nyukhalov) - r.nyukhalov@gmail.com
+* [Andrey Yaroshenko](https://github.com/kradio3) - kradio3@gmail.com
+* [Nathan Sherrit](https://github.com/nathansherrit) - nathansherrit@yahoo.com
+* [Ragupathy Gopalakrishnan](https://github.com/ragu-git) - Ragupathy.gopal@gmail.com
 
 ### Docs
 
