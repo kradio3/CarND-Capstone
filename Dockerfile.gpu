@@ -1,0 +1,6 @@
+FROM kradio5/carnd-gpu-capstone
+
+RUN mkdir /capstone
+VOLUME ["/capstone"]
+VOLUME ["/root/.ros/log/"]
+WORKDIR /capstone/ros
