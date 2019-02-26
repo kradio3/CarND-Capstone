@@ -47,7 +47,6 @@ class TLDetector(object):
 
     def pose_cb(self, msg):
         self.pose = msg
-        self.process_traffic_lights()
 
     def waypoints_cb(self, waypoints):
         if not self.waypoint_tree:
@@ -66,6 +65,7 @@ class TLDetector(object):
 
         """
         self.camera_image = msg
+        self.process_traffic_lights()
 
     def is_stop_tl_state(self, tl_state):
         return tl_state == TrafficLight.RED or tl_state == TrafficLight.YELLOW
