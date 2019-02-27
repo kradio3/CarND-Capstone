@@ -33,8 +33,8 @@ class TLDetector(object):
 
         config_string = rospy.get_param("/traffic_light_config")
         self.config = yaml.load(config_string)
-        is_site = self.config['is_site']
-        self.light_classifier = TLClassifier(is_site)
+        model_weights = self.config['model_weights']
+        self.light_classifier = TLClassifier(model_weights)
 
         self.upcoming_red_light_pub = rospy.Publisher('/traffic_waypoint', Int32, queue_size=1)
         self.last_state = TrafficLight.UNKNOWN
