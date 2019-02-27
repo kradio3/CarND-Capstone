@@ -106,7 +106,7 @@ class DBWNode(object):
         self.target_linear_vel =  msg.twist.linear.x
         self.target_angular_vel = msg.twist.angular.z
         if self.target_linear_vel < 0:
-            rospy.logerror("dbw_node: target lineary velocity is negative: %f" % self.target_linear_vel)
+            rospy.logerr("dbw_node: target lineary velocity is negative: %f" % self.target_linear_vel)
 
     def velocity_cb(self, msg):
         self.current_vel = msg.twist.linear.x
