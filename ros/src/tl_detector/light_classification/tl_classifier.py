@@ -6,12 +6,14 @@ import os
 import tensorflow as tf
 import numpy as np
 import cv2
+import rospy
 
 SPARSE_TO_IDX = {0:0, 1:1, 2:2, 3:4}
 MODEL_PICTURE_SIZE = (224, 224)
 
 class TLClassifier(object):
     def __init__(self, model_weights_file):
+        rospy.loginfo(model_weights_file)
         base_path = os.path.dirname(os.path.abspath(__file__))
         model_weights = os.path.join(base_path, model_weights_file)
         self.model = self.create_model()
@@ -35,6 +37,7 @@ class TLClassifier(object):
             logits = self.model.predict(x)
             maxindex = np.argmax(logits)
             color = SPARSE_TO_IDX[maxindex]
+            rospy.loginfo('COLOR {}'.format(color))
             tl = TrafficLight()
             tl.state = color
             return tl
