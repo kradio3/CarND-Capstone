@@ -15,9 +15,9 @@ import math
 import numpy as np
 from threading import Thread
 
-STATE_COUNT_THRESHOLD = 2
+STATE_COUNT_THRESHOLD = 1
 TL_LOOK_AHEAD = 100
-TL_LOOK_BEHIND = 15
+TL_LOOK_BEHIND = 2
 
 class TLDetector(object):
     def __init__(self):
